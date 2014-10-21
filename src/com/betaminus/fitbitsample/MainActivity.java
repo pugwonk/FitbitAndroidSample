@@ -1,8 +1,5 @@
 package com.betaminus.fitbitsample;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.OAuthRequest;
 import org.scribe.model.Response;
 import org.scribe.model.Token;
@@ -10,56 +7,26 @@ import org.scribe.model.Verb;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 
-import android.net.Uri;
-import android.os.Bundle;
 import android.app.Activity;
-import android.view.Menu;
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.View;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 public class MainActivity extends Activity {
-	// Additions to Scribe taken from https://github.com/apakulov/scribe-java
-	// General flow of Android oauth app taken from
-	// http://schwiz.net/blog/2011/using-scribe-with-android/
 
-	OAuthService service;
-	Token requestToken;
+	static final int GET_PIN_REQUEST = 101;  // The request code
+	static OAuthService service;
+	static Token requestToken;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
-		final WebView wvAuthorise = (WebView) findViewById(R.id.wvAuthorise);
-		final EditText etPIN = (EditText) findViewById(R.id.etPIN);
-
-		// Replace these with your own api key and secret
-		String apiKey = "apikey";
-		String apiSecret = "apisecret";
-
-		service = new ServiceBuilder().provider(FitbitApi.class).apiKey(apiKey)
-				.apiSecret(apiSecret).build();
-
-		// network operation shouldn't run on main thread
-		new Thread(new Runnable() {
-			public void run() {
-				requestToken = service.getRequestToken();
-				final String authURL = service
-						.getAuthorizationUrl(requestToken);
-
-				// Webview nagivation should run on main thread again...
-				wvAuthorise.post(new Runnable() {
-					@Override
-					public void run() {
-						wvAuthorise.loadUrl(authURL);
-					}
-				});
-			}
-		}).start();
+		
+		startActivityForResult(new Intent(this,AuthenticationActivity.class),GET_PIN_REQUEST);
 	}
 
 	public void btnRetrieveData(View view) {
@@ -90,4 +57,27 @@ public class MainActivity extends Activity {
 			}
 		}).start();
 	}
+	
+	@Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent){
+        super.onActivityResult(requestCode, resultCode, intent);
+        
+        if (requestCode == GET_PIN_REQUEST) {
+        	
+            if (resultCode == RESULT_OK) {
+                Bundle extras = intent.getExtras();
+                if(extras != null){
+                	final String pin = extras.getString("PIN");
+                	final EditText etPIN = (EditText) findViewById(R.id.etPIN);
+                	
+                	etPIN.post(new Runnable() {
+						@Override
+						public void run() {
+							etPIN.setText(pin);
+						}
+					});
+                }
+            }
+        }
+    }
 }
