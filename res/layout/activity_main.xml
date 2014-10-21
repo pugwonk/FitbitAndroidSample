@@ -10,12 +10,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity" >
 
-    <!--  WebView
-        android:id="@+id/wvAuthorise"
-        android:layout_width="match_parent"
-        android:layout_height="fill_parent"
-        android:layout_weight="999999" /-->
-        
     <EditText
         android:id="@+id/etPIN"
         android:layout_width="match_parent"
